@@ -5,7 +5,7 @@
 
 FROM centos:7
 
-MAINTAINER Tuan Vo <vohungtuan@gmail.com>
+MAINTAINER Tuan Vo <fervincent@gmail.com>
 ARG sybase_installer=51047759.ZIP
 # Adding resources
 
@@ -24,11 +24,13 @@ ARG sybase_installer=51047759.ZIP
 # Because image size matters, using ADD to fetch packages from remote URLs is strongly discouraged; you should use curl or wget instead.
 
 # ADD http://d1cuw2q49dpd0p.cloudfront.net/ASE16.0/Linux16SP02/ASE_Suite.linuxamd64.tgz /opt/tmp/
+# install for library /lib/ld-linux.so.2
+RUN yum -y install libgcc.i686 glibc.i686 --setopt=protected_multilib=false
 
-RUN df -h &&  mkdir -p /opt/tmp/ \
+RUN mkdir -p /opt/tmp/ \
   && yum install -y atk gdk-pixbuf2 pango unzip openmotif libXp libXt libXtst libXi libXmu libXext libSM libICE libX11 \
   libXtst-devel libXi-devel openmotif-devel libXmu-devel libXt-devel libXext-devel libXp-devel libX11-devel libSM-devel libICE-devel libXcomposite \
-  && yum clean all && rm -rf /tmp/* /var/tmp/* /var/cache/yum/* && df -h
+  && yum clean all && rm -rf /tmp/* /var/tmp/* /var/cache/yum/*
  
 COPY .assets_tmp/* /opt/tmp/
 
