@@ -6,7 +6,7 @@
 FROM centos:7
 
 MAINTAINER Tuan Vo <vohungtuan@gmail.com>
-
+ARG sybase_installer=51047759.ZIP
 # Adding resources
 
 ## SAP ASE Developer Edition 
@@ -24,11 +24,19 @@ MAINTAINER Tuan Vo <vohungtuan@gmail.com>
 # Because image size matters, using ADD to fetch packages from remote URLs is strongly discouraged; you should use curl or wget instead.
 
 # ADD http://d1cuw2q49dpd0p.cloudfront.net/ASE16.0/Linux16SP02/ASE_Suite.linuxamd64.tgz /opt/tmp/
+
+RUN df -h &&  mkdir -p /opt/tmp/ \
+  && yum install -y atk gdk-pixbuf2 pango unzip openmotif libXp libXt libXtst libXi libXmu libXext libSM libICE libX11 \
+  libXtst-devel libXi-devel openmotif-devel libXmu-devel libXt-devel libXext-devel libXp-devel libX11-devel libSM-devel libICE-devel libXcomposite \
+  && yum clean all && rm -rf /tmp/* /var/tmp/* /var/cache/yum/* && df -h
+ 
+COPY .assets_tmp/* /opt/tmp/
+
+
 RUN set -x \
- && curl -OLS http://d1cuw2q49dpd0p.cloudfront.net/ASE16.0/Linux16SP02/ASE_Suite.linuxamd64.tgz \
- && mkdir -p /opt/tmp/ \
- && tar xfz ASE_Suite.linuxamd64.tgz -C /opt/tmp/ \
- && rm -rf ASE_Suite.linuxamd64.tgz
+ && cd /opt/tmp/ \
+ && unzip -q $sybase_installer -d /opt/tmp/ \
+ && rm -rf $sybase_installer 
 
 
 COPY assets/* /opt/tmp/
@@ -42,13 +50,12 @@ RUN set -x \
 # Installing Sybase RPMs
 RUN set -x \
  && rpm -ivh --nodeps /opt/tmp/libaio-0.3.109-13.el7.x86_64.rpm \
- && rpm -ivh --nodeps /opt/tmp/gtk2-2.24.28-8.el7.x86_64.rpm \
- && rpm -Uvh --oldpackage --nodeps /opt/tmp/glibc-2.17-105.el7.i686.rpm
+ && rpm -ivh --nodeps /opt/tmp/gtk2-2.24.28-8.el7.x86_64.rpm
 
 
 # Install Sybase
 RUN set -x \
- && /opt/tmp/ASE_Suite/setup.bin -f /opt/tmp/sybase-response.txt \
+ && /opt/tmp/setup.bin -f /opt/tmp/sybase-response.txt \
     -i silent \
     -DAGREE_TO_SAP_LICENSE=true \
     -DRUN_SILENT=true
